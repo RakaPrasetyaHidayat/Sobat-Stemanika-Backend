@@ -1,1 +1,5 @@
 .vercel
+.qodo
+node_modules/
+dist/
+.zencoder
