@@ -1,33 +1,21 @@
 {
-  "name": "sobat-stemanika",
+  "name": "stemanika-website",
   "version": "1.0.0",
-  "description": "Website sekolah Sobat Stemanika dengan sistem role admin, siswa, dan guest",
-  "main": "backend/server.js",
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "start": "node backend/server.js",
-    "dev": "nodemon backend/server.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "dependencies": {
-    "bcryptjs": "^2.4.3",
-    "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "express-session": "^1.17.3",
-    "jose": "^5.2.0",
-    "multer": "^1.4.5-lts.1",
-    "mysql2": "^3.6.0",
-    "path": "^0.12.7"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RakaPrasetyaHidayat/Sobat-Stemanika-Backend.git"
   },
-  "devDependencies": {
-    "nodemon": "^3.0.1"
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/RakaPrasetyaHidayat/Sobat-Stemanika-Backend/issues"
   },
-  "keywords": [
-    "sekolah",
-    "website",
-    "admin",
-    "siswa",
-    "guest"
-  ],
-  "author": "Sobat Stemanika",
-  "license": "MIT"
+  "homepage": "https://github.com/RakaPrasetyaHidayat/Sobat-Stemanika-Backend#readme"
 }
