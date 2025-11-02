@@ -2,21 +2,33 @@ import { supabase } from "../config/supabase.js";
 
 export const createVote = async (req, res) => {
   const userId = req.user.id;
-  const { pemilihan, kandidat_id } = req.body;
-  if (!pemilihan || !kandidat_id) return res.status(400).json({ error: "pemilihan & kandidat_id required" });
+  const { target_id, vote_type } = req.body || {};
+  if (!target_id || ![1, -1].includes(Number(vote_type))) {
+    return res.status(400).json({ error: "target_id dan vote_type (1 atau -1) wajib" });
+  }
 
   const { data: existing, error: checkErr } = await supabase
-    .from("Votes")
-    .select("id")
+    .from("vote")
+    .select("id, vote_type")
     .eq("user_id", userId)
-    .eq("pemilihan", pemilihan)
+    .eq("target_id", target_id)
     .maybeSingle();
   if (checkErr) return res.status(400).json({ error: checkErr.message });
-  if (existing) return res.status(409).json({ error: "Sudah memilih untuk pemilihan ini" });
+
+  if (existing) {
+    const { data, error } = await supabase
+      .from("vote")
+      .update({ vote_type: Number(vote_type) })
+      .eq("id", existing.id)
+      .select()
+      .single();
+    if (error) return res.status(400).json({ error: error.message });
+    return res.json(data);
+  }
 
   const { data, error } = await supabase
-    .from("Votes")
-    .insert({ user_id: userId, pemilihan, kandidat_id })
+    .from("vote")
+    .insert({ user_id: userId, target_id, vote_type: Number(vote_type) })
     .select()
     .single();
   if (error) return res.status(400).json({ error: error.message });
@@ -24,17 +36,28 @@ export const createVote = async (req, res) => {
 };
 
 export const myVotes = async (req, res) => {
-  const { data, error } = await supabase.from("Votes").select("*").eq("user_id", req.user.id);
+  const { data, error } = await supabase.from("vote").select("*").eq("user_id", req.user.id);
   if (error) return res.status(400).json({ error: error.message });
   res.json(data);
 };
 
 export const results = async (req, res) => {
-  const { pemilihan } = req.query;
-  if (!pemilihan) return res.status(400).json({ error: "pemilihan required" });
-  const { data: votes, error } = await supabase.from("Votes").select("kandidat_id").eq("pemilihan", pemilihan);
+  const { target_id } = req.query;
+  if (!target_id) return res.status(400).json({ error: "target_id wajib" });
+  const { data: votes, error } = await supabase.from("vote").select("vote_type").eq("target_id", target_id);
   if (error) return res.status(400).json({ error: error.message });
-  const counts = {};
-  for (const v of votes) counts[v.kandidat_id] = (counts[v.kandidat_id] || 0) + 1;
-  res.json(counts);
+  let up = 0, down = 0;
+  for (const v of votes) v.vote_type === 1 ? up++ : down++;
+  const total = votes.length || 0;
+  const percent_up = total ? Number(((up / total) * 100).toFixed(2)) : 0;
+  const percent_down = total ? Number(((down / total) * 100).toFixed(2)) : 0;
+  res.json({
+    target_id,
+    upvotes: up,
+    downvotes: down,
+    score: up - down,
+    total,
+    percent_up,
+    percent_down,
+  });
 };
