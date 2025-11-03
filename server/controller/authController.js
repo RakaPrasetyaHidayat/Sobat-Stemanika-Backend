@@ -68,7 +68,14 @@ export const login = async (req, res) => {
     }
 
     const { password: _omit, ...publicUser } = userRow;
-    res.json({ user: publicUser, token });
+    res.json({
+      status: "success",
+      message: "Login successful",
+      data: {
+        access_token: token,
+        user: publicUser
+      }
+    });
   } catch (e) {
     res.status(500).json({ error: e?.message || "Server error" });
   }
