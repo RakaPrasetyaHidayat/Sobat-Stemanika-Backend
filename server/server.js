@@ -15,9 +15,21 @@ app.use(express.json());
 
 app.get("/api/db-check", async (_req, res) => {
   try {
-    const { data, error } = await supabase.from("Users").select("id").limit(1);
-    if (error) return res.status(500).json({ ok: false, error: error.message });
-    res.json({ ok: true, table: "Users", rows: Array.isArray(data) ? data.length : 0 });
+    const tables = ["Users", "Eskul", "Kandidat", "vote"];
+    const results = await Promise.all(
+      tables.map(async (t) => {
+        const { count, error } = await supabase
+          .from(t)
+          .select("*", { count: "exact", head: true });
+        return { table: t, count: count ?? 0, ok: !error, error: error?.message || null };
+      })
+    );
+
+    const ok = results.every((r) => r.ok);
+    const total_rows = results.reduce((sum, r) => sum + (r.count || 0), 0);
+    const summary = Object.fromEntries(results.map((r) => [r.table, { count: r.count }]));
+
+    res.json({ ok, total_rows, summary, details: results });
   } catch (e) {
     res.status(500).json({ ok: false, error: e?.message || "error" });
   }
