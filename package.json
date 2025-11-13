@@ -2,11 +2,14 @@
   "name": "stemanika-website",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server/server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server/server.js",
-    "dev": "nodemon server/server.js"
+    "dev": "nodemon server/server.js",
+    "lint": "eslint server/**/*.js",
+    "lint:fix": "eslint server/**/*.js --fix",
+    "format": "prettier --write server/**/*.js"
   },
   "repository": {
     "type": "git",
@@ -28,6 +31,9 @@
     "express": "^5.1.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "eslint": "^8.57.0",
+    "@eslint/js": "^8.57.0",
+    "prettier": "^3.2.5"
   }
 }

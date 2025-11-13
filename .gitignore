@@ -1,6 +1,12 @@
+# Dependencies
 node_modules/
+
+# Environment variables
 .env
-dist/
-.vscode/
-.DS_Store
-.vercel
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Deployment
+.vercel/
