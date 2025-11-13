@@ -9,8 +9,11 @@ import eskulRoutes from "./routes/eskul.js";
 import kandidatRoutes from "./routes/kandidat.js";
 import voteRoutes from "./routes/vote.js";
 
-// Load environment variables
-dotenv.config();
+// Load environment variables only in development
+// In production (Vercel), environment variables are already injected
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config();
+}
 
 // Validate required environment variables
 const requiredEnvVars = ['SUPABASE_URL', 'SUPABASE_ANON_PUBLIC_KEY'];
