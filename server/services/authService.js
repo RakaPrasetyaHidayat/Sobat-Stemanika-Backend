@@ -80,11 +80,14 @@ const fetchUserById = async (id, fields = baseUserFields) => {
 /**
  * Generate JWT token for user
  * @param {Object} userRow - User data
- * @returns {string|null} JWT token or null if secret not configured
+ * @returns {string} JWT token
+ * @throws {HttpError} If JWT_SECRET is not configured
  */
 const issueServerToken = (userRow) => {
   const secret = process.env.JWT_SECRET;
-  if (!secret) return null;
+  if (!secret) {
+    throw new HttpError(500, "Server configuration error: JWT_SECRET is not configured");
+  }
 
   const payload = {
     sub: userRow.id,
@@ -218,8 +221,13 @@ export const authenticateUser = async ({ idNumber, password }) => {
   const valid = verifyPassword(password, userRow.password);
   if (!valid) throw new HttpError(401, "Password salah");
 
+  const accessToken = issueServerToken(userRow);
+  if (!accessToken) {
+    throw new HttpError(500, "Gagal membuat token autentikasi");
+  }
+
   return {
-    accessToken: issueServerToken(userRow),
+    accessToken,
     user: sanitizeUser(userRow)
   };
 };

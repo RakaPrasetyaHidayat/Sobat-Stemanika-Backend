@@ -10,14 +10,25 @@ import { createClient } from "@supabase/supabase-js";
 // Environment variable validation
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_PUBLIC_KEY;
+const jwtSecret = process.env.JWT_SECRET;
 
 // Validate required environment variables
+const missingVars = [];
+
 if (!supabaseUrl) {
-  throw new Error("SUPABASE_URL environment variable is required");
+  missingVars.push("SUPABASE_URL");
 }
 
 if (!supabaseKey) {
-  throw new Error("SUPABASE_ANON_PUBLIC_KEY environment variable is required");
+  missingVars.push("SUPABASE_ANON_PUBLIC_KEY");
+}
+
+if (!jwtSecret) {
+  missingVars.push("JWT_SECRET");
+}
+
+if (missingVars.length > 0) {
+  throw new Error(`Missing required environment variables: ${missingVars.join(", ")}. Please configure these in your Vercel dashboard or .env.local file.`);
 }
 
 // Validate URL format
