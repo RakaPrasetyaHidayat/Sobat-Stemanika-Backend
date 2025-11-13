@@ -1,5 +1,5 @@
 import express from "express";
-import { listEskul } from "../controller/eskulController.js";
+import { listEskul } from "../controllers/eskulController.js";
 
 const router = express.Router();
 

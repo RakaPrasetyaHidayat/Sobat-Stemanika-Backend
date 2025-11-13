@@ -1,6 +1,6 @@
 import express from "express";
-import { requireAuth, requireRole } from "./middleware.js";
-import { createVote, myVotes, results } from "../controller/voteController.js";
+import { requireAuth, requireRole } from "../middleware/auth.js";
+import { createVote, myVotes, results } from "../controllers/voteController.js";
 
 const router = express.Router();
 
