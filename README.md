@@ -73,17 +73,19 @@ Siswa dapat melihat daftar ektrakurikuler melalui public API.
 
 📁 Project Structure
 server/
-├── routes/         # Auth, candidates, votes, eskul
-├── middleware/     # JWT check, admin check
-├── services/       # Supabase + business logic
-├── utils/          # Helpers
-├── server.js       # Main entry point
-├── swagger.js      # API docs (optional)
-├── .env.example    # Environment variables
-└── package.json
+│── routes/         # API endpoints
+│── middleware/     # Auth protection
+│── services/       # Supabase + business logic
+│── utils/          # Helpers
+│── server.js       # Entry point
+│── swagger.js      # Optional documentation
+.env
+package.json
+
 
 
 ⚙️ Installation & Setup
+
 1️⃣ Clone the Repository
 git clone https://github.com/RakaPrasetyaHidayat/Sobat-Stemanika-Backend.git
 cd Sobat-Stemanika-Backend
