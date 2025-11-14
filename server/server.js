@@ -127,15 +127,15 @@ app.use("/api/eskul", eskulRoutes);
 app.use("/api/kandidat", kandidatRoutes);
 app.use("/api/vote", voteRoutes);
 
-// 404 handler for undefined routes
-app.all("*", (_req, res) => {
+// 404 handler - must be after all other routes
+app.use((req, res) => {
   res.status(404).json({
     error: "Route not found",
-    message: "The requested endpoint does not exist"
+    message: `The requested endpoint ${req.method} ${req.path} does not exist`
   });
 });
 
-// Global error handler
+// Global error handler - must be last
 app.use((error, _req, res, _next) => {
   console.error('Unhandled error:', error);
   res.status(500).json({
