@@ -128,7 +128,7 @@ app.use("/api/kandidat", kandidatRoutes);
 app.use("/api/vote", voteRoutes);
 
 // 404 handler for undefined routes
-app.use("*", (_req, res) => {
+app.all("*", (_req, res) => {
   res.status(404).json({
     error: "Route not found",
     message: "The requested endpoint does not exist"
