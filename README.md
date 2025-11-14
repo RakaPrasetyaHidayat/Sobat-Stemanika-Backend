@@ -1,282 +1,125 @@
 🎓 Sobat Stemanika — Backend
 
-Backend resmi untuk aplikasi pemilihan Ketua OSIS & MPK SMKN 1 Karawang (Sobat Stemanika).
-Dibangun menggunakan Node.js + Express, Supabase Auth, dan Supabase Database.
+Official backend for the Student Council (OSIS) & MPK Election System of SMKN 1 Majalengka — also known as Sobat Stemanika.
 
-Backend ini menyediakan REST API untuk autentikasi, kandidat, ekstrakurikuler, dan sistem voting dengan validasi satu suara per pemilihan per siswa.
+This backend powers the website used by students to view candidates, read visions & missions, and cast their official vote online.
+It ensures a secure, fast, and transparent digital election process.
 
-🚀 Fitur Utama
-🔐 Autentikasi
+🚀 What Is Sobat Stemanika?
 
-Login & register dengan Supabase Auth.
+Sobat Stemanika is a modern digital voting platform that replaces manual ballot-based elections.
+The system is designed to make the election of OSIS & MPK:
 
-Mendukung JWT internal server (opsional) jika JWT_SECRET diset.
+More transparent
 
-Semua endpoint dilindungi dengan Bearer Token.
+More efficient
 
-🗳️ Voting System
+Free from vote manipulation
 
-Siswa hanya bisa memilih sekali untuk setiap jenis pemilihan.
+Easy to access for all students
 
-Hasil vote dihitung real-time (grouped by kandidat_id).
+The backend provides:
 
-👤 Role-Based Access
+Student authentication
 
-siswa → hanya bisa voting.
+Candidate listing
 
-admin → mengelola kandidat.
+One-vote-per-category validation
 
-📦 Integration
+Real-time vote counting
 
-Database & Auth: Supabase
+Admin tools for managing candidates
 
-Backend: Express.js REST API
+🔧 Technologies Used
 
-📁 Struktur Proyek
+Node.js + Express — REST API
+
+Supabase Auth — User authentication
+
+Supabase Database — Candidates, votes, extracurriculars
+
+JWT — Secure authorization
+
+🗳️ Key Features
+🔐 1. Student Authentication
+
+Students log in using their Supabase email + password.
+Account roles include student or admin.
+
+🧑‍🎓 2. Anti–Double Voting System
+
+Each student can vote only once per election category
+(example: ketua_osis, ketua_mpk).
+
+Any second vote attempt is blocked with 409 Conflict.
+
+Votes are saved instantly and counted automatically.
+
+🧑‍🏫 3. Candidate Management (Admin)
+
+Admins are able to:
+
+Create new candidates
+
+Delete candidates
+
+Update candidate information (optional)
+
+Candidate data includes photo, vision, mission, and more.
+
+📊 4. Real-Time Election Results
+
+A public endpoint provides aggregated vote results.
+Perfect for displaying live dashboards during election day.
+
+📁 Project Structure (Simplified)
 server/
-│── routes/
-│   ├── auth.js
-│   ├── eskul.js
-│   ├── kandidat.js
-│   ├── vote.js
-│── middleware/
-│── services/
-│── utils/
-│── server.js
-│── swagger.js (opsional, jika ingin dokumentasi)
+│── routes/         # API endpoints
+│── middleware/     # Auth protection
+│── services/       # Supabase + business logic
+│── utils/          # Helpers
+│── server.js       # Entry point
+│── swagger.js      # Optional documentation
 .env
 package.json
 
-⚙️ Instalasi & Setup
-1. Clone repo
-git clone https://github.com/your-repo/sobat-stemanika-backend.git
-cd sobat-stemanika-backend
-
-2. Konfigurasi Environment
-
-Copy .env.example → .env:
-
-SUPABASE_URL=your-supabase-url
-SUPABASE_KEY=your-supabase-service-role-or-anon-key
-PORT=3000
-JWT_SECRET=your-long-random-secret
-ADMIN_SECRET=your-admin-secret
-
-3. Install dependencies
+⚙️ How to Run
 npm install
-
-4. Jalankan server
-
-Mode development:
-
 npm run dev
 
 
-Mode production:
-
-npm start
-
-
-Server akan berjalan pada:
+Server runs at:
 
 http://localhost:3000
 
-📘 API Reference
 
-Base URL: /api
+Configure your Supabase credentials in .env.
 
-🔐 Authentication
-POST /api/auth/register
+🌐 Deployment
 
-Mendaftarkan akun siswa.
+You can deploy this backend to:
 
-Body:
+Railway / Render / Fly.io — easiest for Express
 
-{
-  "email": "user@mail.com",
-  "password": "secret",
-  "nama": "Nama Siswa",
-  "nisn": "123456",
-  "nip": null
-}
+Vercel (serverless) — requires minor adjustments
 
+Docker — for enterprise or production environments
 
-Response:
+👑 Admin Access
 
-201 Created + user data
+Admins are created manually via Supabase dashboard.
 
-Notes:
+🙌 About This Project
 
-Role selalu siswa (tidak bisa diubah melalui request).
+Sobat Stemanika was built to support the digital transformation of student elections at SMKN 1 Majalengka.
+This system ensures elections that are:
 
-POST /api/auth/login
+modern
 
-Body:
+secure
 
-{ "email": "user@mail.com", "password": "secret" }
+fair
 
+transparent
 
-Response:
-
-{
-  "token": "<server-jwt?>",
-  "access_token": "<supabase-token>",
-  "user": { ... }
-}
-
-GET /api/auth/me
-
-Authorization required.
-
-Header:
-
-Authorization: Bearer <token>
-
-
-Mengembalikan user yang sedang login.
-
-🏫 Eskul (Publik)
-GET /api/eskul
-
-Mengambil seluruh daftar ekstrakurikuler.
-
-🧑‍🏫 Kandidat
-
-Admin only.
-
-GET /api/kandidat
-
-Publik.
-
-POST /api/kandidat
-
-Header:
-
-Authorization: Bearer <ADMIN_TOKEN>
-
-
-Body:
-
-{
-  "nama": "Calon Ketua",
-  "visi": "Maju Bersama",
-  "misi": ["Disiplin", "Kerja keras"],
-  "foto_url": "https://..."
-}
-
-DELETE /api/kandidat/:id
-
-Admin only.
-
-🗳️ Voting
-POST /api/vote
-
-Role: siswa only.
-
-Body:
-
-{
-  "pemilihan": "ketua_osis",
-  "kandidat_id": 12
-}
-
-
-Aturan:
-
-User hanya dapat memilih satu kali per kategori pemilihan.
-
-Jika sudah pernah memilih → 409 Conflict.
-
-GET /api/vote/me
-
-Mengambil semua vote milik user login.
-
-GET /api/vote/results?pemilihan=ketua_osis
-
-Public endpoint.
-Mengembalikan hasil vote dalam format agregat.
-
-🗄️ Database Schema (Supabase)
-Users (Auth + Profile)
-Field	Type	Note
-id	uuid	Auth user id
-nama	text	required
-nisn_nip	text	optional
-role	text	siswa / admin
-Kandidat
-Field	Type
-id	int
-nama	text
-visi	text
-misi	json
-foto_url	text
-Votes
-Field	Type
-id	int
-user_id	uuid
-pemilihan	text
-kandidat_id	int
-created_at	timestamp
-📦 Deployment
-🚀 Jika Deploy ke Vercel
-
-Vercel tidak cocok untuk Express full-server tanpa perubahan.
-
-Opsi deploy:
-
-1. Rewrite ke Serverless Functions (Direkomendasikan)
-
-Pindah setiap route ke /api/*.js
-
-Gunakan Web API style handler
-
-2. Deploy dengan Docker (Enterprise)
-3. Host di Railway / Render / Fly.io (Simple Node Server)
-
-Paling mudah untuk Express.
-
-Tips Vercel
-
-Tambahkan SUPABASE_URL & SUPABASE_KEY di env Vercel
-
-Pastikan tidak membuka long-running server
-
-🛡️ Admin Creation (Manual)
-
-Endpoint:
-
-POST /api/auth/create-admin
-
-Header:
-
-x-admin-secret: <ADMIN_SECRET>
-
-
-Body:
-
-{
-  "email": "admin@mail.com",
-  "password": "secret",
-  "nama": "Admin"
-}
-
-
-Used for creating admin securely.
-
-🤝 Kontribusi
-
-PR, issue, dan improvement sangat diterima.
-
-📩 Kontak
-
-Jika membutuhkan:
-
-Konversi penuh ke serverless
-
-Swagger Documentation
-
-Dockerfile & CI/CD
-
-Integrasi mobile / Flutter
-
-Beritahu saja — saya bisa siapkan secara lengkap.
+real-time monitored

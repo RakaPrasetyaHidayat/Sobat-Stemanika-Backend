@@ -26,20 +26,58 @@ export const submitVote = async (userId, { target_id, vote_type }) => {
   if (!target_id || voteValue === null) {
     throw new HttpError(400, "target_id dan vote_type (1 atau -1) wajib");
   }
+  // Preferred: call server-side RPC 'cast_vote' which uses auth.uid() to set
+  // supabase_user_id and enforces one-vote-per-user. If RPC is not present,
+  // fall back to an upsert approach.
+  try {
+    const rpcParams = { p_kandidat_id: target_id, p_vote_type: voteValue };
+    // If caller provided a supabase user id, include it as optional param
+    if (userId) rpcParams.p_user_id = userId;
 
-  // Use upsert for better performance - let the database handle insert/update logic
-  const payload = { user_id: userId, target_id, vote_type: voteValue };
-  const { data, error } = await supabase
-    .from("vote")
-    .upsert(payload, { onConflict: "user_id,target_id" })
-    .select()
-    .single();
+    const { data, error } = await supabase.rpc("cast_vote", rpcParams);
 
-  if (error) throw new HttpError(500, error.message);
+    if (error) {
+      // Handle known error messages from the RPC (e.g. user_has_already_voted)
+      const msg = (error?.message || "").toLowerCase();
+      if (msg.includes("user_has_already_voted") || msg.includes("already voted") || error?.code === "23505") {
+        throw new HttpError(409, "User has already voted");
+      }
 
-  // Since we can't determine if it was an insert or update with upsert,
-  // we'll assume it's an update for consistency (most votes will be updates)
-  return { record: data, isNew: false };
+      // If the function does not exist or other RPC error, fall through to upsert fallback
+      if (!/function .*cast_vote/i.test(error?.message || "")) {
+        throw new HttpError(500, error.message);
+      }
+    }
+
+    // RPC may return the inserted row or a result set. Normalize to object
+    const record = Array.isArray(data) ? data[0] : data;
+    return { record: record || null, isNew: true };
+  } catch (rpcErr) {
+    // If the RPC wasn't available (or intentionally disabled), fallback to upsert
+    if (!(rpcErr instanceof HttpError) || rpcErr.status === 500) {
+      // attempt fallback upsert
+      const payload = { user_id: userId, target_id, vote_type: voteValue };
+      const { data, error } = await supabase
+        .from("vote")
+        .upsert(payload, { onConflict: "user_id,target_id" })
+        .select()
+        .single();
+
+      if (error) {
+        // unique violation or other db error
+        const msg = (error?.message || "").toLowerCase();
+        if (msg.includes("duplicate") || error?.code === "23505") {
+          throw new HttpError(409, "User has already voted");
+        }
+        throw new HttpError(500, error.message);
+      }
+
+      return { record: data, isNew: false };
+    }
+
+    // rethrow known HttpError (like 409)
+    throw rpcErr;
+  }
 };
 
 /**
