@@ -1,166 +1,282 @@
-# Sobat Stemanika — Backend
+🎓 Sobat Stemanika — Backend
 
-This repository contains the backend for the Sobat Stemanika election app (ketua OSIS / MPK). The backend uses Supabase for auth and data storage and exposes a small REST API.
+Backend resmi untuk aplikasi pemilihan Ketua OSIS & MPK SMKN 1 Karawang (Sobat Stemanika).
+Dibangun menggunakan Node.js + Express, Supabase Auth, dan Supabase Database.
 
-Important notes
-- This repo is backend-only (no frontend files present). If you previously had a `frontend/` folder it was removed; current project contains only `server/` code.
-- Authentication: Supabase Auth (email/password). The API expects a Bearer token (access token) in `Authorization` header for protected endpoints.
- - Server JWTs: the server can also issue its own JWTs on login which are signed with `JWT_SECRET` and include the user's `id` and `role`. If you set `JWT_SECRET` in your `.env` the `/api/auth/login` endpoint will return a server token in the `token` field. Protected endpoints accept either the server JWT or a Supabase access token.
-- NISN / NIP: optional during registration — you may pass `nisn`, `nip`, or `nisn_nip`. If omitted, it will be stored as `null`.
-- Voting rules: a student (`siswa`) can only vote once per `pemilihan` (e.g. `ketua_osis`, `wakil_osis`, `ketua_mpk`, `wakil_mpk`). The server enforces this by checking `Votes` table for existing rows with the same `user_id` and `pemilihan`.
+Backend ini menyediakan REST API untuk autentikasi, kandidat, ekstrakurikuler, dan sistem voting dengan validasi satu suara per pemilihan per siswa.
 
-Quick start (local)
+🚀 Fitur Utama
+🔐 Autentikasi
 
-1. Copy `.env.example` to `.env` and set these variables:
+Login & register dengan Supabase Auth.
 
-```
+Mendukung JWT internal server (opsional) jika JWT_SECRET diset.
+
+Semua endpoint dilindungi dengan Bearer Token.
+
+🗳️ Voting System
+
+Siswa hanya bisa memilih sekali untuk setiap jenis pemilihan.
+
+Hasil vote dihitung real-time (grouped by kandidat_id).
+
+👤 Role-Based Access
+
+siswa → hanya bisa voting.
+
+admin → mengelola kandidat.
+
+📦 Integration
+
+Database & Auth: Supabase
+
+Backend: Express.js REST API
+
+📁 Struktur Proyek
+server/
+│── routes/
+│   ├── auth.js
+│   ├── eskul.js
+│   ├── kandidat.js
+│   ├── vote.js
+│── middleware/
+│── services/
+│── utils/
+│── server.js
+│── swagger.js (opsional, jika ingin dokumentasi)
+.env
+package.json
+
+⚙️ Instalasi & Setup
+1. Clone repo
+git clone https://github.com/your-repo/sobat-stemanika-backend.git
+cd sobat-stemanika-backend
+
+2. Konfigurasi Environment
+
+Copy .env.example → .env:
+
 SUPABASE_URL=your-supabase-url
-SUPABASE_KEY=your-service-role-or-anon-key
+SUPABASE_KEY=your-supabase-service-role-or-anon-key
 PORT=3000
-JWT_SECRET=some-long-random-secret
-```
+JWT_SECRET=your-long-random-secret
+ADMIN_SECRET=your-admin-secret
 
-2. Install and run locally:
-
-```powershell
+3. Install dependencies
 npm install
-npm run dev   # or npm start
-```
 
-When the server starts it prints the URL including `http://localhost:PORT` so you can open it in the browser.
+4. Jalankan server
 
-API Reference (summary)
+Mode development:
 
-Base path: `/api`
+npm run dev
 
-Authentication
 
-- POST /api/auth/register
-  - Body (JSON): { email, password, nama, nisn_nip?, nisn?, nip? }
-  - Notes: `nisn_nip` is optional. If `nisn` or `nip` are provided they're used to populate `nisn_nip`.
-  - Behavior: role is set server-side to `siswa` and cannot be provided by the client.
-  - Response: 201 created + user object
+Mode production:
 
-- POST /api/auth/login
-  - Body (JSON): { email, password }
-  - Response: { token?, access_token?, user }
-    - `token`: server-signed JWT (present when `JWT_SECRET` is set). Use it in `Authorization: Bearer <token>` for subsequent requests.
-    - `access_token`: Supabase access token (also accepted by the server).
+npm start
 
-- GET /api/auth/me
-  - Headers: Authorization: Bearer <access_token>
-  - Response: { user }
 
-Eskul (extracurricular)
+Server akan berjalan pada:
 
-- GET /api/eskul
-  - Public: returns list of eskul
+http://localhost:3000
 
-(See `server/routes/eskul.js` for the full set of eskul endpoints)
+📘 API Reference
 
-Kandidat (candidates) — admin actions
+Base URL: /api
 
-- GET /api/kandidat
-  - Public
-- POST /api/kandidat
-  - Admin only (requires Authorization Bearer token where user's metadata role = 'admin')
-  - Body: candidate fields
-- DELETE /api/kandidat/:id
-  - Admin only
+🔐 Authentication
+POST /api/auth/register
 
-Voting
+Mendaftarkan akun siswa.
 
-- POST /api/vote
-  - Role: siswa only
-  - Headers: Authorization: Bearer <access_token>
-  - Body: { pemilihan, kandidat_id }
-    - `pemilihan` must be one of the election types your app uses (for example `ketua_osis`)
-    - `kandidat_id` is the chosen candidate id
-  - Behavior: The server checks the `Votes` table for any existing row matching (user_id, pemilihan). If present, server responds 409 (already voted). If not, it inserts a Vote row.
-  - Response: 201 created + vote row
+Body:
 
-- GET /api/vote/me
-  - Role: siswa only
-  - Returns all votes by the authenticated user
+{
+  "email": "user@mail.com",
+  "password": "secret",
+  "nama": "Nama Siswa",
+  "nisn": "123456",
+  "nip": null
+}
 
-- GET /api/vote/results?pemilihan=ketua_osis
-  - Public
-  - Returns aggregated counts keyed by `kandidat_id`
 
-Database
+Response:
 
-This backend expects the following Supabase tables (example names):
-- Users (managed by Supabase Auth + profile table `Users` for extra fields)
-- Eskul
-- Kandidat
-- Votes (columns: id, user_id, pemilihan, kandidat_id, created_at)
+201 Created + user data
 
-Voting rule enforcement: the backend checks the `Votes` table before inserting, to prevent multiple votes per `pemilihan` for the same user.
+Notes:
 
-Deploying to Vercel
+Role selalu siswa (tidak bisa diubah melalui request).
 
-Vercel prefers serverless functions instead of long-running Express servers. You have three options:
+POST /api/auth/login
 
-1. Use Vercel Serverless Functions — rewrite the Express app into `api/*` functions (recommended for small apps).
-2. Deploy with Docker on Vercel (Enterprise) — run a container with your Express app.
-3. Use a VM / container-friendly host (Render, Railway, Fly, Heroku) for a simple Node server.
+Body:
 
-If you still want to use Vercel:
-- Either refactor to serverless functions under `/api` and keep the same logic, or
-- Use a separate host for the Node server and serve the frontend from Vercel.
+{ "email": "user@mail.com", "password": "secret" }
 
-Notes for Vercel:
-- Add environment variables (SUPABASE_URL and SUPABASE_KEY) in the Vercel project settings.
-- Set the build and start commands according to your deployment method.
 
-Examples (curl)
+Response:
 
-Register (optional nisn):
+{
+  "token": "<server-jwt?>",
+  "access_token": "<supabase-token>",
+  "user": { ... }
+}
 
-```bash
-curl -X POST https://localhost:3000/api/auth/register \
-  -H 'Content-Type: application/json' \
-  -d '{"email":"siswa@example.com","password":"secret","nama":"Siswa A","nisn":"123456"}'
-```
+GET /api/auth/me
 
-Login:
+Authorization required.
 
-```bash
-curl -X POST https://localhost:3000/api/auth/login \
-  -H 'Content-Type: application/json' \
-  -d '{"email":"siswa@example.com","password":"secret"}'
-```
+Header:
 
-Vote (example):
+Authorization: Bearer <token>
 
-```bash
-curl -X POST http://localhost:3000/api/vote \
-  -H 'Content-Type: application/json' \
-  -H 'Authorization: Bearer <ACCESS_TOKEN>' \
-  -d '{"pemilihan":"ketua_osis","kandidat_id":123}'
-```
 
-If you want, I can:
-- Convert the Express app to Vercel serverless handlers (one-by-one), or
-- Add a minimal `vercel.json` and example serverless wrapper.
+Mengembalikan user yang sedang login.
 
-Contact / next steps
+🏫 Eskul (Publik)
+GET /api/eskul
 
-Tell me if you want me to:
-- Convert endpoints to Vercel serverless functions now (I can start with the `api/vote` and `api/auth` functions), or
-- Keep the Express app and add a Dockerfile so you can deploy as a container.
+Mengambil seluruh daftar ekstrakurikuler.
 
-Manual admin creation
+🧑‍🏫 Kandidat
 
-If you need to create an `admin` account from the backend, you can use the protected endpoint:
+Admin only.
 
-- POST /api/auth/create-admin
-  - Headers: `x-admin-secret: <ADMIN_SECRET>` (or include `admin_secret` in the POST body)
-  - Body (JSON): { email, password, nama, nisn_nip?, nisn?, nip? }
-  - Env: set `ADMIN_SECRET` in your `.env` file to a shared secret known only to you.
-  - Behavior: When the correct secret is provided the endpoint will create a Supabase user and set `role = 'admin'` in user metadata and the `Users` profile table.
+GET /api/kandidat
 
-Security note: keep `ADMIN_SECRET` private and do not expose this endpoint to untrusted clients. Alternatively, create admin users directly in Supabase dashboard for the safest approach.
+Publik.
 
----
-Generated README with API docs and deployment notes.
+POST /api/kandidat
+
+Header:
+
+Authorization: Bearer <ADMIN_TOKEN>
+
+
+Body:
+
+{
+  "nama": "Calon Ketua",
+  "visi": "Maju Bersama",
+  "misi": ["Disiplin", "Kerja keras"],
+  "foto_url": "https://..."
+}
+
+DELETE /api/kandidat/:id
+
+Admin only.
+
+🗳️ Voting
+POST /api/vote
+
+Role: siswa only.
+
+Body:
+
+{
+  "pemilihan": "ketua_osis",
+  "kandidat_id": 12
+}
+
+
+Aturan:
+
+User hanya dapat memilih satu kali per kategori pemilihan.
+
+Jika sudah pernah memilih → 409 Conflict.
+
+GET /api/vote/me
+
+Mengambil semua vote milik user login.
+
+GET /api/vote/results?pemilihan=ketua_osis
+
+Public endpoint.
+Mengembalikan hasil vote dalam format agregat.
+
+🗄️ Database Schema (Supabase)
+Users (Auth + Profile)
+Field	Type	Note
+id	uuid	Auth user id
+nama	text	required
+nisn_nip	text	optional
+role	text	siswa / admin
+Kandidat
+Field	Type
+id	int
+nama	text
+visi	text
+misi	json
+foto_url	text
+Votes
+Field	Type
+id	int
+user_id	uuid
+pemilihan	text
+kandidat_id	int
+created_at	timestamp
+📦 Deployment
+🚀 Jika Deploy ke Vercel
+
+Vercel tidak cocok untuk Express full-server tanpa perubahan.
+
+Opsi deploy:
+
+1. Rewrite ke Serverless Functions (Direkomendasikan)
+
+Pindah setiap route ke /api/*.js
+
+Gunakan Web API style handler
+
+2. Deploy dengan Docker (Enterprise)
+3. Host di Railway / Render / Fly.io (Simple Node Server)
+
+Paling mudah untuk Express.
+
+Tips Vercel
+
+Tambahkan SUPABASE_URL & SUPABASE_KEY di env Vercel
+
+Pastikan tidak membuka long-running server
+
+🛡️ Admin Creation (Manual)
+
+Endpoint:
+
+POST /api/auth/create-admin
+
+Header:
+
+x-admin-secret: <ADMIN_SECRET>
+
+
+Body:
+
+{
+  "email": "admin@mail.com",
+  "password": "secret",
+  "nama": "Admin"
+}
+
+
+Used for creating admin securely.
+
+🤝 Kontribusi
+
+PR, issue, dan improvement sangat diterima.
+
+📩 Kontak
+
+Jika membutuhkan:
+
+Konversi penuh ke serverless
+
+Swagger Documentation
+
+Dockerfile & CI/CD
+
+Integrasi mobile / Flutter
+
+Beritahu saja — saya bisa siapkan secara lengkap.
