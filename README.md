@@ -1,125 +1,135 @@
-🎓 Sobat Stemanika — Backend
+<p align="center">🎓 Sobat Stemanika — Official Election Backend</p>
+<p align="center">Digital Voting System for OSIS & MPK Election — SMKN 1 Majalengka</p> <p align="center"> <img src="https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js" /> <img src="https://img.shields.io/badge/Express.js-4.x-black?style=for-the-badge&logo=express" /> <img src="https://img.shields.io/badge/Supabase-PostgreSQL-3FCF8E?style=for-the-badge&logo=supabase" /> <img src="https://img.shields.io/badge/JWT-Secure-FFB000?style=for-the-badge&logo=jsonwebtokens" /> </p>
+🔥 Overview
 
-Official backend for the Student Council (OSIS) & MPK Election System of SMKN 1 Majalengka — also known as Sobat Stemanika.
+Sobat Stemanika adalah backend resmi untuk sistem pemilihan digital OSIS & MPK di SMKN 1 Majalengka.
+Dibangun untuk menggantikan proses pemilu manual menjadi:
 
-This backend powers the website used by students to view candidates, read visions & missions, and cast their official vote online.
-It ensures a secure, fast, and transparent digital election process.
+✔ Modern dan efisien
+✔ Aman dan anti–manipulasi
+✔ Satu siswa satu suara
+✔ Menggunakan autentikasi Supabase
+✔ Hasil real-time dan transparan
 
-🚀 What Is Sobat Stemanika?
+Backend ini menyediakan REST API yang digunakan website utama untuk menampilkan kandidat, menampilkan visi–misi, dan melakukan voting secara aman.
 
-Sobat Stemanika is a modern digital voting platform that replaces manual ballot-based elections.
-The system is designed to make the election of OSIS & MPK:
+🚀 Key Features
+🔐 1. Secure Student Authentication
 
-More transparent
+Login menggunakan Supabase Auth
 
-More efficient
+Role-based access (student/admin)
 
-Free from vote manipulation
+JWT untuk otorisasi server
 
-Easy to access for all students
+🗳️ 2. One Student, One Vote
 
-The backend provides:
+Validasi otomatis: siswa hanya bisa memilih sekali per kategori
 
-Student authentication
+Server menolak voting kedua (HTTP 409 Conflict)
 
-Candidate listing
+Semua vote tercatat permanen dan terenkripsi
 
-One-vote-per-category validation
+🧑‍🏫 3. Candidate Management (Admin Only)
 
-Real-time vote counting
+Admin dapat:
 
-Admin tools for managing candidates
+Menambahkan kandidat
 
-🔧 Technologies Used
+Menghapus kandidat
 
-Node.js + Express — REST API
+Mengedit info kandidat
 
-Supabase Auth — User authentication
+Mengelola visi & misi (JSON)
 
-Supabase Database — Candidates, votes, extracurriculars
+Mengunggah foto kandidat
 
-JWT — Secure authorization
+📊 4. Real-Time Voting Results
 
-🗳️ Key Features
-🔐 1. Student Authentication
+Sistem menyediakan endpoint publik untuk menampilkan:
 
-Students log in using their Supabase email + password.
-Account roles include student or admin.
+Total suara per kandidat
 
-🧑‍🎓 2. Anti–Double Voting System
+Statistik pemilihan
 
-Each student can vote only once per election category
-(example: ketua_osis, ketua_mpk).
+Live count untuk dashboard sekolah
 
-Any second vote attempt is blocked with 409 Conflict.
+🏫 5. Public Extracurricular (Eskul) Directory
 
-Votes are saved instantly and counted automatically.
+Siswa dapat melihat daftar ektrakurikuler melalui public API.
 
-🧑‍🏫 3. Candidate Management (Admin)
-
-Admins are able to:
-
-Create new candidates
-
-Delete candidates
-
-Update candidate information (optional)
-
-Candidate data includes photo, vision, mission, and more.
-
-📊 4. Real-Time Election Results
-
-A public endpoint provides aggregated vote results.
-Perfect for displaying live dashboards during election day.
-
-📁 Project Structure (Simplified)
+🏗️ Tech Stack
+Layer	Technology
+Runtime	Node.js
+Framework	Express.js
+Database	Supabase PostgreSQL
+Auth	Supabase Auth
+Tokens	JWT (HS256)
+Documentation	Swagger (optional)
+📁 Project Structure
 server/
-│── routes/         # API endpoints
-│── middleware/     # Auth protection
-│── services/       # Supabase + business logic
-│── utils/          # Helpers
-│── server.js       # Entry point
-│── swagger.js      # Optional documentation
-.env
-package.json
+├── routes/         # Auth, candidates, votes, eskul
+├── middleware/     # JWT check, admin check
+├── services/       # Supabase + business logic
+├── utils/          # Helpers
+├── server.js       # Main entry point
+├── swagger.js      # API docs (optional)
+├── .env.example    # Environment variables
+└── package.json
 
-⚙️ How to Run
+⚙️ Installation & Setup
+1️⃣ Clone the Repository
+git clone https://github.com/RakaPrasetyaHidayat/Sobat-Stemanika-Backend.git
+cd Sobat-Stemanika-Backend
+
+2️⃣ Install Dependencies
 npm install
+
+3️⃣ Create .env File
+
+Salin dari .env.example, kemudian isi:
+
+SUPABASE_URL=your_supabase_url
+SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE=your_service_role_key
+
+JWT_SECRET=your_random_secret
+PORT=3000
+
+4️⃣ Run Development Server
 npm run dev
 
 
-Server runs at:
+Server berjalan di:
 
 http://localhost:3000
 
-
-Configure your Supabase credentials in .env.
-
-🌐 Deployment
-
-You can deploy this backend to:
-
-Railway / Render / Fly.io — easiest for Express
-
-Vercel (serverless) — requires minor adjustments
-
-Docker — for enterprise or production environments
-
+🌐 Deployment Options
+Platform	Status
+Railway	✔ Recommended
+Render	✔ Easy to deploy
+Fly.io	✔ Good performance
+Vercel	⚠ Needs serverless adaptation
+Docker	✔ Production ready
 👑 Admin Access
 
-Admins are created manually via Supabase dashboard.
+Untuk keamanan, role admin diatur langsung melalui Supabase Dashboard atau melalui endpoint khusus dengan ADMIN_SECRET.
 
-🙌 About This Project
+🎯 Project Goal
 
-Sobat Stemanika was built to support the digital transformation of student elections at SMKN 1 Majalengka.
-This system ensures elections that are:
+Proyek ini dibuat untuk mendukung transformasi digital sekolah dengan menghadirkan:
 
-modern
+✔ Pemilu OSIS & MPK yang modern
 
-secure
+✔ Lebih aman dan terhindar dari manipulasi
 
-fair
+✔ Melatih siswa menggunakan teknologi digital
 
-transparent
+✔ Dokumentasi & hasil yang transparan
 
-real-time monitored
+
+📜 License
+
+bebas digunakan untuk kebutuhan sekolah lain dengan sepengetahuan dan perizinan developer asli
+
+Jika kamu ingin, saya bisa membuat:
