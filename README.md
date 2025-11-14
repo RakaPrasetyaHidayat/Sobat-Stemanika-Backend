@@ -71,18 +71,6 @@ Siswa dapat melihat daftar ektrakurikuler melalui public API.
 | **Tokens**        | JWT                 |
 | **Documentation** | Swagger             |
 
-📁 Project Structure
-server/
-│── routes/         # API endpoints
-│── middleware/     # Auth protection
-│── services/       # Supabase + business logic
-│── utils/          # Helpers
-│── server.js       # Entry point
-│── swagger.js      # Optional documentation
-.env
-package.json
-
-
 
 ⚙️ Installation & Setup
 
