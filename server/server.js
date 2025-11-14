@@ -1,21 +1,18 @@
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
-// import helmet from "helmet"; // Recommended: npm install helmet
-
+import { swaggerUiMiddleware, swaggerSpec } from "./swagger.js";
 import { supabase } from "./config/supabase.js";
 import authRoutes from "./routes/auth.js";
 import eskulRoutes from "./routes/eskul.js";
 import kandidatRoutes from "./routes/kandidat.js";
 import voteRoutes from "./routes/vote.js";
 
-// Load environment variables only in development
-// In production (Vercel), environment variables are already injected
 if (process.env.NODE_ENV !== 'production') {
   dotenv.config();
 }
 
-// Validate required environment variables
+
 const requiredEnvVars = ['SUPABASE_URL', 'SUPABASE_ANON_PUBLIC_KEY'];
 const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
 
@@ -24,20 +21,10 @@ if (missingEnvVars.length > 0) {
   process.exit(1);
 }
 
-// Initialize Express application
+
 const app = express();
 
-// Security middleware (recommended: install helmet)
-// app.use(helmet({
-//   contentSecurityPolicy: {
-//     directives: {
-//       defaultSrc: ["'self'"],
-//       styleSrc: ["'self'", "'unsafe-inline'"],
-//       scriptSrc: ["'self'"],
-//       imgSrc: ["'self'", "data:", "https:"],
-//     },
-//   },
-// }));
+
 
 // CORS configuration
 app.use(cors({
@@ -51,10 +38,12 @@ app.use(cors({
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
+// Swagger documentation
+app.use("/api-docs", swaggerUiMiddleware.serve, swaggerUiMiddleware.setup(swaggerSpec));
+
 /**
- * Health check endpoint to verify database connectivity
- * @route GET /api/db-check
- * @returns {Object} Database status and table information
+  @route 
+  @returns {Object} 
  */
 app.get("/api/db-check", async (_req, res) => {
   try {
@@ -108,9 +97,9 @@ app.get("/api/db-check", async (_req, res) => {
 });
 
 /**
- * Root endpoint for basic connectivity check
- * @route GET /
- * @returns {string} OK status message
+ 
+  @route 
+  @returns {string} 
  */
 app.get("/", (_req, res) => {
   res.json({
@@ -127,7 +116,7 @@ app.use("/api/eskul", eskulRoutes);
 app.use("/api/kandidat", kandidatRoutes);
 app.use("/api/vote", voteRoutes);
 
-// 404 handler - must be after all other routes
+
 app.use((req, res) => {
   res.status(404).json({
     error: "Route not found",
@@ -135,7 +124,7 @@ app.use((req, res) => {
   });
 });
 
-// Global error handler - must be last
+
 app.use((error, _req, res, _next) => {
   console.error('Unhandled error:', error);
   res.status(500).json({
@@ -144,7 +133,7 @@ app.use((error, _req, res, _next) => {
   });
 });
 
-// Start server
+
 const PORT = process.env.PORT || 3000;
 const server = app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
@@ -152,7 +141,7 @@ const server = app.listen(PORT, () => {
   console.log(`⏰ Started at: ${new Date().toISOString()}`);
 });
 
-// Graceful shutdown handling
+
 process.on('SIGTERM', () => {
   console.log('🛑 SIGTERM received, shutting down gracefully...');
   server.close(() => {
