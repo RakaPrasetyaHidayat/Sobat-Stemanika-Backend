@@ -102,17 +102,14 @@ http://localhost:3000
 
 🌐 Deployment Options
 
-Platform	Status
+| Platform          | Status                      |
+| ----------------- | --------------------------- |
+| **Railway**       | Recomended                  |
+| **Render**        | Easy to Deploy              |
+| **Vercel**        | Need Serverless Adaptationn |
+| **Fly.io**        | Good Performance            |
+| **Docker**        | Production Ready            |
 
-Railway	✔ Recommended
-
-Render	✔ Easy to deploy
-
-Fly.io	✔ Good performance
-
-Vercel	⚠ Needs serverless adaptation
-
-Docker	✔ Production ready
 
 👑 Admin Access
 
