@@ -101,12 +101,19 @@ Server berjalan di:
 http://localhost:3000
 
 🌐 Deployment Options
+
 Platform	Status
+
 Railway	✔ Recommended
+
 Render	✔ Easy to deploy
+
 Fly.io	✔ Good performance
+
 Vercel	⚠ Needs serverless adaptation
+
 Docker	✔ Production ready
+
 👑 Admin Access
 
 Untuk keamanan, role admin diatur langsung melalui Supabase Dashboard atau melalui endpoint khusus dengan ADMIN_SECRET.
