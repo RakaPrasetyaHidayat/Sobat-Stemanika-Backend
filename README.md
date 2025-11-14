@@ -113,7 +113,7 @@ http://localhost:3000
 
 👑 Admin Access
 
-Untuk keamanan, role admin diatur langsung melalui Supabase Dashboard atau melalui endpoint khusus dengan ADMIN_SECRET.
+Untuk keamanan, role admin diatur langsung melalui Supabase Dashboard.
 
 🎯 Project Goal
 
