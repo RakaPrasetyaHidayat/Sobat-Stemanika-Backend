@@ -6,9 +6,13 @@ Sobat Stemanika adalah backend resmi untuk sistem pemilihan digital OSIS & MPK d
 Dibangun untuk menggantikan proses pemilu manual menjadi:
 
 ✔ Modern dan efisien
+
 ✔ Aman dan anti–manipulasi
+
 ✔ Satu siswa satu suara
+
 ✔ Menggunakan autentikasi Supabase
+
 ✔ Hasil real-time dan transparan
 
 Backend ini menyediakan REST API yang digunakan website utama untuk menampilkan kandidat, menampilkan visi–misi, dan melakukan voting secara aman.
@@ -58,14 +62,15 @@ Live count untuk dashboard sekolah
 
 Siswa dapat melihat daftar ektrakurikuler melalui public API.
 
-🏗️ Tech Stack
-Layer	Technology
-Runtime	Node.js
-Framework	Express.js
-Database	Supabase PostgreSQL
-Auth	Supabase Auth
-Tokens	JWT (HS256)
-Documentation	Swagger (optional)
+| Layer             | Technology          |
+| ----------------- | ------------------- |
+| **Runtime**       | Node.js             |
+| **Framework**     | Express.js          |
+| **Database**      | Supabase PostgreSQL |
+| **Auth**          | Supabase Auth       |
+| **Tokens**        | JWT                 |
+| **Documentation** | Swagger             |
+
 📁 Project Structure
 server/
 ├── routes/         # Auth, candidates, votes, eskul
