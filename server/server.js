@@ -1,8 +1,13 @@
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
+import compression from "compression";
+import morgan from "morgan";
+import rateLimit from "express-rate-limit";
 import { swaggerUiMiddleware, swaggerSpec } from "./swagger.js";
 import { supabase } from "./config/supabase.js";
+import { initializeRedis } from "./config/redis.js";
+import { addCacheHeaders, noCacheHeaders } from "./middleware/cacheMiddleware.js";
 import authRoutes from "./routes/auth.js";
 import eskulRoutes from "./routes/eskul.js";
 import kandidatRoutes from "./routes/kandidat.js";
@@ -24,7 +29,19 @@ if (missingEnvVars.length > 0) {
 
 const app = express();
 
+app.use(compression());
 
+app.use(morgan('combined'));
+
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: 'Terlalu banyak permintaan dari IP ini, coba lagi dalam 15 menit',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use(generalLimiter);
 
 // CORS configuration
 app.use(cors({
@@ -41,9 +58,36 @@ app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 // Swagger documentation
 app.use("/api-docs", swaggerUiMiddleware.serve, swaggerUiMiddleware.setup(swaggerSpec));
 
+// Cache headers for static content
+app.use(addCacheHeaders(3600));
+
 /**
-  @route 
-  @returns {Object} 
+ * @swagger
+ * /api/db-check:
+ *   get:
+ *     summary: Check database connection and table counts
+ *     tags:
+ *       - System
+ *     responses:
+ *       200:
+ *         description: Database status check result
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                 total_rows:
+ *                   type: integer
+ *                 summary:
+ *                   type: object
+ *                 details:
+ *                   type: array
+ *                 timestamp:
+ *                   type: string
+ *       500:
+ *         description: Database check failed
  */
 app.get("/api/db-check", async (_req, res) => {
   try {
@@ -97,9 +141,28 @@ app.get("/api/db-check", async (_req, res) => {
 });
 
 /**
- 
-  @route 
-  @returns {string} 
+ * @swagger
+ * /:
+ *   get:
+ *     summary: API health check
+ *     tags:
+ *       - System
+ *     responses:
+ *       200:
+ *         description: API is running
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 version:
+ *                   type: string
+ *                 timestamp:
+ *                   type: string
  */
 app.get("/", (_req, res) => {
   res.json({
@@ -135,23 +198,34 @@ app.use((error, _req, res, _next) => {
 
 
 const PORT = process.env.PORT || 3000;
-const server = app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
-  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`⏰ Started at: ${new Date().toISOString()}`);
-});
+
+async function startServer() {
+  await initializeRedis();
+
+  const server = app.listen(PORT, () => {
+    console.log(`🚀 Server running at http://localhost:${PORT}`);
+    console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`⏰ Started at: ${new Date().toISOString()}`);
+  });
+
+  return server;
+}
+
+const serverPromise = startServer();
 
 
-process.on('SIGTERM', () => {
+process.on('SIGTERM', async () => {
   console.log('🛑 SIGTERM received, shutting down gracefully...');
+  const server = await serverPromise;
   server.close(() => {
     console.log('✅ Server closed');
     process.exit(0);
   });
 });
 
-process.on('SIGINT', () => {
+process.on('SIGINT', async () => {
   console.log('🛑 SIGINT received, shutting down gracefully...');
+  const server = await serverPromise;
   server.close(() => {
     console.log('✅ Server closed');
     process.exit(0);

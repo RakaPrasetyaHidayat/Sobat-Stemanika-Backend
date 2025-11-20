@@ -1,11 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-
-/**
- * Supabase configuration and client initialization
- *
- * This module handles the setup and validation of Supabase client configuration
- * for database operations in the STEMANIKA voting system.
- */
+import 'dotenv/config';
 
 // Environment variable validation
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -28,7 +22,7 @@ if (!jwtSecret) {
 }
 
 if (missingVars.length > 0) {
-  throw new Error(`Missing required environment variables: ${missingVars.join(", ")}. Please configure these in your Vercel dashboard or .env.local file.`);
+  throw new Error(`Missing required environment variables: ${missingVars.join(", ")}. Please configure these in your Vercel dashboard or .env file.`);
 }
 
 // Validate URL format

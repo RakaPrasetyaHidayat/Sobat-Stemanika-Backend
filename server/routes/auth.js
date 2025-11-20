@@ -1,5 +1,7 @@
 import express from "express";
-import { register, login, me } from "../controllers/authController.js";
+import { register, login, me, updateProfile } from "../controllers/authController.js";
+import { requireAuth } from "../middleware/auth.js";
+import { authLimiter } from "../middleware/rateLimiters.js";
 
 const router = express.Router();
 
@@ -32,7 +34,7 @@ const router = express.Router();
  *       400:
  *         description: Invalid input
  */
-router.post("/register", register);
+router.post("/register", authLimiter, register);
 
 /**
  * @swagger
@@ -60,7 +62,7 @@ router.post("/register", register);
  *       401:
  *         description: Invalid credentials
  */
-router.post("/login", login);
+router.post("/login", authLimiter, login);
 
 /**
  * @swagger
@@ -78,5 +80,31 @@ router.post("/login", login);
  *         description: Unauthorized
  */
 router.get("/me", me);
+
+/**
+ * @swagger
+ * /api/auth/me:
+ *   patch:
+ *     summary: Update own profile
+ *     tags:
+ *       - Authentication
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nama:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Profile updated
+ *       401:
+ *         description: Unauthorized
+ */
+router.patch("/me", requireAuth, updateProfile);
 
 export default router;

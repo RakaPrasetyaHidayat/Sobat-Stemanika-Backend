@@ -251,3 +251,38 @@ export const getProfileFromToken = async (token) => {
   const { publicUser } = await resolveAccessToken(token);
   return publicUser;
 };
+
+/**
+ * Update user profile
+ * @param {string|number} userId - User ID
+ * @param {Object} updateData - Data to update
+ * @param {string} [updateData.nama] - User name
+ * @returns {Promise<Object>} Updated user profile
+ */
+export const updateUserProfile = async (userId, { nama }) => {
+  if (!userId) {
+    throw new HttpError(400, "User ID is required");
+  }
+
+  const updatePayload = {};
+  if (nama) {
+    if (typeof nama !== 'string' || nama.trim().length < 2) {
+      throw new HttpError(400, "Nama harus diisi dan minimal 2 karakter");
+    }
+    updatePayload.nama = nama.trim();
+  }
+
+  if (Object.keys(updatePayload).length === 0) {
+    throw new HttpError(400, "No fields to update");
+  }
+
+  const { data, error } = await supabase
+    .from("Users")
+    .update(updatePayload)
+    .eq("id", userId)
+    .select(baseUserFields)
+    .single();
+
+  if (error) throw new HttpError(500, error.message);
+  return data;
+};

@@ -1,5 +1,6 @@
 import express from "express";
 import { requireAuth, requireRole } from "../middleware/auth.js";
+import { voteLimiter } from "../middleware/rateLimiters.js";
 import { createVote, myVotes, results } from "../controllers/voteController.js";
 
 const router = express.Router();
@@ -28,7 +29,7 @@ const router = express.Router();
  *       403:
  *         description: Forbidden (not siswa)
  */
-router.post("/", requireAuth, requireRole("siswa"), createVote);
+router.post("/", requireAuth, requireRole("siswa"), voteLimiter, createVote);
 
 /**
  * @swagger

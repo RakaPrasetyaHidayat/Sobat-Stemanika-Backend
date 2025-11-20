@@ -1,5 +1,6 @@
 import express from "express";
 import { requireAuth, requireRole } from "../middleware/auth.js";
+import { cacheMiddleware } from "../middleware/cacheMiddleware.js";
 import { listKandidat, createKandidat, updateKandidat, deleteKandidat } from "../controllers/kandidatController.js";
 
 const router = express.Router();

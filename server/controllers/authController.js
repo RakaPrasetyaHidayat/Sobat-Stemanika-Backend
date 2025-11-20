@@ -1,4 +1,4 @@
-import { registerUser, authenticateUser, getProfileFromToken } from "../services/authService.js";
+import { registerUser, authenticateUser, getProfileFromToken, updateUserProfile } from "../services/authService.js";
 import { toHttpError, createValidationError } from "../utils/httpError.js";
 
 /**
@@ -116,6 +116,29 @@ export const me = async (req, res) => {
     res.json({ user });
   } catch (error) {
     const err = toHttpError(error, 401);
+    res.status(err.status).json({ error: err.message });
+  }
+};
+
+/**
+ * Update user profile
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Promise<void>}
+ */
+export const updateProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { nama } = req.body;
+
+    if (!nama || typeof nama !== 'string' || nama.trim().length < 2) {
+      throw createValidationError("Nama harus diisi dan minimal 2 karakter");
+    }
+
+    const user = await updateUserProfile(userId, { nama });
+    res.json({ message: "Profil berhasil diperbarui", user });
+  } catch (error) {
+    const err = toHttpError(error);
     res.status(err.status).json({ error: err.message });
   }
 };

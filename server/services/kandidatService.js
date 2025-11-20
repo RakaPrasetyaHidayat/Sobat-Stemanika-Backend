@@ -1,4 +1,5 @@
 import { supabase } from "../config/supabase.js";
+import { cacheGet, cacheSet } from "../config/redis.js";
 import { HttpError } from "../utils/httpError.js";
 
 /**
