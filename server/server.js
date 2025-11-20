@@ -193,7 +193,18 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 3000;
 
 async function startServer() {
-  await initializeRedis();
+  const shouldInitRedis = Boolean(
+    process.env.REDIS_URL ||
+    process.env.REDIS_HOST ||
+    process.env.REDIS_PORT ||
+    process.env.REDIS_PASSWORD
+  );
+
+  if (shouldInitRedis) {
+    await initializeRedis();
+  } else {
+    console.log('Redis not configured. Skipping cache initialization.');
+  }
 
   const server = app.listen(PORT, () => {
     console.log(`🚀 Server running at http://localhost:${PORT}`);

@@ -1,35 +1,22 @@
 import { createClient } from "@supabase/supabase-js";
 import 'dotenv/config';
+import { validateEnvironment } from '../utils/envValidator.js';
 
-// Environment variable validation
+// Run environment validation on startup
+console.log('\n🔐 Validating environment configuration...\n');
+const envValidator = validateEnvironment();
+
+// Get validated environment variables
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_PUBLIC_KEY;
 const jwtSecret = process.env.JWT_SECRET;
 
-// Validate required environment variables
-const missingVars = [];
-
-if (!supabaseUrl) {
-  missingVars.push("SUPABASE_URL");
-}
-
-if (!supabaseKey) {
-  missingVars.push("SUPABASE_ANON_PUBLIC_KEY");
-}
-
-if (!jwtSecret) {
-  missingVars.push("JWT_SECRET");
-}
-
-if (missingVars.length > 0) {
-  throw new Error(`Missing required environment variables: ${missingVars.join(", ")}. Please configure these in your Vercel dashboard or .env file.`);
-}
-
-// Validate URL format
-try {
-  new URL(supabaseUrl);
-} catch (error) {
-  throw new Error(`Invalid SUPABASE_URL format: ${supabaseUrl}`);
+// Final safety check (should not reach here if envValidator worked)
+if (!supabaseUrl || !supabaseKey || !jwtSecret) {
+  throw new Error(
+    'Critical: Required environment variables are missing. ' +
+    'Check SUPABASE_URL, SUPABASE_ANON_PUBLIC_KEY, and JWT_SECRET'
+  );
 }
 
 // Supabase client configuration options
@@ -53,20 +40,49 @@ const supabaseOptions = {
 export const supabase = createClient(supabaseUrl, supabaseKey, supabaseOptions);
 
 /**
- * Test database connection
+ * Test database connection with retry logic
+ * @param {number} retries - Number of retry attempts
  * @returns {Promise<boolean>} Connection status
  */
-export const testConnection = async () => {
-  try {
-    const { data, error } = await supabase
-      .from('Users')
-      .select('id', { count: 'exact', head: true });
+export const testConnection = async (retries = 3) => {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      console.log(`\n🧪 Testing Supabase connection (Attempt ${attempt}/${retries})...`);
 
-    return !error;
-  } catch (error) {
-    console.error('Supabase connection test failed:', error.message);
-    return false;
+      const { data, error } = await supabase
+        .from('Users')
+        .select('id', { count: 'exact', head: true });
+
+      if (error) {
+        console.error(`   ❌ Query error: ${error.message}`);
+        if (attempt === retries) {
+          throw error;
+        }
+        // Wait before retry
+        await new Promise(r => setTimeout(r, 1000 * attempt));
+        continue;
+      }
+
+      console.log('   ✅ Connection successful!');
+      return true;
+    } catch (error) {
+      console.error(`   ❌ Connection attempt ${attempt} failed:`, error.message);
+
+      if (attempt === retries) {
+        console.error(`\n❌ Failed to connect after ${retries} attempts`);
+        console.error('📌 Check your Supabase credentials:');
+        console.error('   1. SUPABASE_URL must start with https://');
+        console.error('   2. SUPABASE_ANON_PUBLIC_KEY must be a valid key from Supabase');
+        console.error('   3. Firewall rules should allow your IP');
+        return false;
+      }
+
+      // Wait before retry
+      await new Promise(r => setTimeout(r, 1000 * attempt));
+    }
   }
+
+  return false;
 };
 
 /**
@@ -74,7 +90,7 @@ export const testConnection = async () => {
  * @returns {Object} Configuration information
  */
 export const getConfig = () => ({
-  url: supabaseUrl.replace(/https?:\/\/[^@]+@/, 'https://***:***@'), // Mask credentials
+  url: supabaseUrl,
   hasKey: !!supabaseKey,
   options: supabaseOptions
 });
