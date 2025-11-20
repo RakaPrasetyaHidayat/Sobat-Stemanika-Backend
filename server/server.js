@@ -7,6 +7,7 @@ import rateLimit from "express-rate-limit";
 import { swaggerUiMiddleware, swaggerSpec } from "./swagger.js";
 import { supabase } from "./config/supabase.js";
 import { initializeRedis } from "./config/redis.js";
+import { errorHandler } from "./middleware/errorHandler.js";
 import { addCacheHeaders, noCacheHeaders } from "./middleware/cacheMiddleware.js";
 import authRoutes from "./routes/auth.js";
 import eskulRoutes from "./routes/eskul.js";
@@ -179,7 +180,6 @@ app.use("/api/eskul", eskulRoutes);
 app.use("/api/kandidat", kandidatRoutes);
 app.use("/api/vote", voteRoutes);
 
-
 app.use((req, res) => {
   res.status(404).json({
     error: "Route not found",
@@ -187,14 +187,7 @@ app.use((req, res) => {
   });
 });
 
-
-app.use((error, _req, res, _next) => {
-  console.error('Unhandled error:', error);
-  res.status(500).json({
-    error: "Internal server error",
-    message: process.env.NODE_ENV === 'development' ? error.message : "Something went wrong"
-  });
-});
+app.use(errorHandler);
 
 
 const PORT = process.env.PORT || 3000;

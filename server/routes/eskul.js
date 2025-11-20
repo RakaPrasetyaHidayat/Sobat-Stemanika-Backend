@@ -1,4 +1,5 @@
 import express from "express";
+import { asyncHandler } from "../middleware/errorHandler.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { listEskul, getEskulDetail, createEskul, updateEskul, deleteEskul } from "../controllers/eskulController.js";
 
@@ -17,7 +18,7 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.get("/", listEskul);
+router.get("/", asyncHandler(listEskul));
 
 /**
  * @swagger
@@ -38,7 +39,7 @@ router.get("/", listEskul);
  *       404:
  *         description: Not found
  */
-router.get("/:id", getEskulDetail);
+router.get("/:id", asyncHandler(getEskulDetail));
 
 /**
  * @swagger
@@ -59,7 +60,7 @@ router.get("/:id", getEskulDetail);
  *       201:
  *         description: Eskul created
  */
-router.post("/", requireAuth, requireRole("admin"), createEskul);
+router.post("/", requireAuth, requireRole("admin"), asyncHandler(createEskul));
 
 /**
  * @swagger
@@ -80,7 +81,7 @@ router.post("/", requireAuth, requireRole("admin"), createEskul);
  *       200:
  *         description: Eskul updated
  */
-router.patch("/:id", requireAuth, requireRole("admin"), updateEskul);
+router.patch("/:id", requireAuth, requireRole("admin"), asyncHandler(updateEskul));
 
 /**
  * @swagger
@@ -101,6 +102,6 @@ router.patch("/:id", requireAuth, requireRole("admin"), updateEskul);
  *       204:
  *         description: Eskul deleted
  */
-router.delete("/:id", requireAuth, requireRole("admin"), deleteEskul);
+router.delete("/:id", requireAuth, requireRole("admin"), asyncHandler(deleteEskul));
 
 export default router;

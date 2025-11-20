@@ -1,34 +1,28 @@
 import { registerUser, authenticateUser, getProfileFromToken, updateUserProfile } from "../services/authService.js";
-import { toHttpError, createValidationError } from "../utils/httpError.js";
+import { ValidationError } from "../utils/errors.js";
 
-/**
- * Validate registration input
- * @param {Object} data - Input data
- * @returns {Object} Validated and sanitized data
- */
 const validateRegistrationInput = (data) => {
   const { nama, password, nisn_nip, nisn, nip } = data || {};
 
   if (!nama || typeof nama !== 'string' || nama.trim().length < 2) {
-    throw createValidationError("Nama harus diisi dan minimal 2 karakter");
+    throw new ValidationError("Nama harus diisi dan minimal 2 karakter");
   }
 
   if (!password || typeof password !== 'string' || password.length < 8) {
-    throw createValidationError("Password harus diisi dan minimal 8 karakter");
+    throw new ValidationError("Password harus diisi dan minimal 8 karakter");
   }
 
-  // Check for basic password strength
   const hasUpperCase = /[A-Z]/.test(password);
   const hasLowerCase = /[a-z]/.test(password);
   const hasNumbers = /\d/.test(password);
 
   if (!hasUpperCase || !hasLowerCase || !hasNumbers) {
-    throw createValidationError("Password harus mengandung huruf besar, huruf kecil, dan angka");
+    throw new ValidationError("Password harus mengandung huruf besar, huruf kecil, dan angka");
   }
 
   const idNumber = nisn_nip ?? nisn ?? nip;
   if (!idNumber || typeof idNumber !== 'string' || idNumber.trim().length === 0) {
-    throw createValidationError("NISN atau NIP harus diisi");
+    throw new ValidationError("NISN atau NIP harus diisi");
   }
 
   return {
@@ -38,38 +32,16 @@ const validateRegistrationInput = (data) => {
   };
 };
 
-/**
- * Handle user registration
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @returns {Promise<void>}
- */
-export const register = async (req, res) => {
-  try {
-    const validatedData = validateRegistrationInput(req.body);
-    const user = await registerUser(validatedData);
-    res.status(201).json({ message: "Register success", user });
-  } catch (error) {
-    const err = toHttpError(error);
-    res.status(err.status).json({ error: err.message });
-  }
-};
-
-/**
- * Validate login input
- * @param {Object} data - Input data
- * @returns {Object} Validated and sanitized data
- */
 const validateLoginInput = (data) => {
   const { password, nisn_nip, nisn, nip } = data || {};
 
   if (!password || typeof password !== 'string' || password.trim().length === 0) {
-    throw createValidationError("Password harus diisi");
+    throw new ValidationError("Password harus diisi");
   }
 
   const idNumber = nisn_nip ?? nisn ?? nip;
   if (!idNumber || typeof idNumber !== 'string' || idNumber.trim().length === 0) {
-    throw createValidationError("NISN atau NIP harus diisi");
+    throw new ValidationError("NISN atau NIP harus diisi");
   }
 
   return {
@@ -78,67 +50,40 @@ const validateLoginInput = (data) => {
   };
 };
 
-/**
- * Handle user login
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @returns {Promise<void>}
- */
+export const register = async (req, res) => {
+  const validatedData = validateRegistrationInput(req.body);
+  const user = await registerUser(validatedData);
+  res.status(201).json({ message: "Register success", user });
+};
+
 export const login = async (req, res) => {
-  try {
-    const validatedData = validateLoginInput(req.body);
-    const { accessToken, user } = await authenticateUser(validatedData);
-    res.json({
-      status: "success",
-      message: "Login successful",
-      data: {
-        access_token: accessToken,
-        user
-      }
-    });
-  } catch (error) {
-    const err = toHttpError(error);
-    res.status(err.status).json({ error: err.message });
-  }
-};
-
-/**
- * Get current user profile
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @returns {Promise<void>}
- */
-export const me = async (req, res) => {
-  try {
-    const auth = req.headers.authorization || "";
-    const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
-    const user = await getProfileFromToken(token);
-    res.json({ user });
-  } catch (error) {
-    const err = toHttpError(error, 401);
-    res.status(err.status).json({ error: err.message });
-  }
-};
-
-/**
- * Update user profile
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @returns {Promise<void>}
- */
-export const updateProfile = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const { nama } = req.body;
-
-    if (!nama || typeof nama !== 'string' || nama.trim().length < 2) {
-      throw createValidationError("Nama harus diisi dan minimal 2 karakter");
+  const validatedData = validateLoginInput(req.body);
+  const { accessToken, user } = await authenticateUser(validatedData);
+  res.json({
+    status: "success",
+    message: "Login successful",
+    data: {
+      access_token: accessToken,
+      user
     }
+  });
+};
 
-    const user = await updateUserProfile(userId, { nama });
-    res.json({ message: "Profil berhasil diperbarui", user });
-  } catch (error) {
-    const err = toHttpError(error);
-    res.status(err.status).json({ error: err.message });
+export const me = async (req, res) => {
+  const auth = req.headers.authorization || "";
+  const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
+  const user = await getProfileFromToken(token);
+  res.json({ user });
+};
+
+export const updateProfile = async (req, res) => {
+  const userId = req.user.id;
+  const { nama } = req.body;
+
+  if (!nama || typeof nama !== 'string' || nama.trim().length < 2) {
+    throw new ValidationError("Nama harus diisi dan minimal 2 karakter");
   }
+
+  const user = await updateUserProfile(userId, { nama });
+  res.json({ message: "Profil berhasil diperbarui", user });
 };

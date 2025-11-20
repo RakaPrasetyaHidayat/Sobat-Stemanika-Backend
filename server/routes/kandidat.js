@@ -1,4 +1,5 @@
 import express from "express";
+import { asyncHandler } from "../middleware/errorHandler.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { cacheMiddleware } from "../middleware/cacheMiddleware.js";
 import { listKandidat, createKandidat, updateKandidat, deleteKandidat } from "../controllers/kandidatController.js";
@@ -18,7 +19,7 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.get("/", listKandidat);
+router.get("/", asyncHandler(listKandidat));
 
 /**
  * @swagger
@@ -46,7 +47,7 @@ router.get("/", listKandidat);
  *       403:
  *         description: Forbidden (not admin)
  */
-router.post("/", requireAuth, requireRole("admin"), createKandidat);
+router.post("/", requireAuth, requireRole("admin"), asyncHandler(createKandidat));
 
 /**
  * @swagger
@@ -73,7 +74,7 @@ router.post("/", requireAuth, requireRole("admin"), createKandidat);
  *       200:
  *         description: Candidate updated
  */
-router.patch("/:id", requireAuth, requireRole("admin"), updateKandidat);
+router.patch("/:id", requireAuth, requireRole("admin"), asyncHandler(updateKandidat));
 
 /**
  * @swagger
@@ -94,6 +95,6 @@ router.patch("/:id", requireAuth, requireRole("admin"), updateKandidat);
  *       204:
  *         description: Candidate deleted
  */
-router.delete("/:id", requireAuth, requireRole("admin"), deleteKandidat);
+router.delete("/:id", requireAuth, requireRole("admin"), asyncHandler(deleteKandidat));
 
 export default router;

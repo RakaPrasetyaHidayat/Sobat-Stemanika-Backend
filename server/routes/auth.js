@@ -1,4 +1,5 @@
 import express from "express";
+import { asyncHandler } from "../middleware/errorHandler.js";
 import { register, login, me, updateProfile } from "../controllers/authController.js";
 import { requireAuth } from "../middleware/auth.js";
 import { authLimiter } from "../middleware/rateLimiters.js";
@@ -34,7 +35,7 @@ const router = express.Router();
  *       400:
  *         description: Invalid input
  */
-router.post("/register", authLimiter, register);
+router.post("/register", authLimiter, asyncHandler(register));
 
 /**
  * @swagger
@@ -62,7 +63,7 @@ router.post("/register", authLimiter, register);
  *       401:
  *         description: Invalid credentials
  */
-router.post("/login", authLimiter, login);
+router.post("/login", authLimiter, asyncHandler(login));
 
 /**
  * @swagger
@@ -79,7 +80,7 @@ router.post("/login", authLimiter, login);
  *       401:
  *         description: Unauthorized
  */
-router.get("/me", me);
+router.get("/me", asyncHandler(me));
 
 /**
  * @swagger
@@ -105,6 +106,6 @@ router.get("/me", me);
  *       401:
  *         description: Unauthorized
  */
-router.patch("/me", requireAuth, updateProfile);
+router.patch("/me", requireAuth, asyncHandler(updateProfile));
 
 export default router;

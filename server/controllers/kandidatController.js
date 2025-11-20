@@ -4,34 +4,29 @@ import {
   updateKandidatEntry,
   removeKandidatEntry
 } from "../services/kandidatService.js";
-import { toHttpError, createValidationError } from "../utils/httpError.js";
+import { ValidationError } from "../utils/errors.js";
 
-/**
- * Validate kandidat input data
- * @param {Object} data - Input data
- * @returns {Object} Validated and sanitized data
- */
 const validateKandidatInput = (data) => {
   const { nama_kandidat, nomor_kandidat, img_url, calon, tagline } = data || {};
 
   if (!nama_kandidat || typeof nama_kandidat !== 'string' || nama_kandidat.trim().length < 2) {
-    throw createValidationError("Nama kandidat harus diisi dan minimal 2 karakter");
+    throw new ValidationError("Nama kandidat harus diisi dan minimal 2 karakter");
   }
 
   if (!nomor_kandidat || typeof nomor_kandidat !== 'number' || nomor_kandidat < 1) {
-    throw createValidationError("Nomor kandidat harus berupa angka positif");
+    throw new ValidationError("Nomor kandidat harus berupa angka positif");
   }
 
   if (!img_url || typeof img_url !== 'string' || img_url.trim().length === 0) {
-    throw createValidationError("URL gambar harus diisi");
+    throw new ValidationError("URL gambar harus diisi");
   }
 
   if (!calon || typeof calon !== 'string' || calon.trim().length === 0) {
-    throw createValidationError("Calon harus diisi");
+    throw new ValidationError("Calon harus diisi");
   }
 
   if (tagline && typeof tagline !== 'string') {
-    throw createValidationError("Tagline harus berupa string");
+    throw new ValidationError("Tagline harus berupa string");
   }
 
   return {
@@ -43,68 +38,24 @@ const validateKandidatInput = (data) => {
   };
 };
 
-/**
- * List kandidat entries with optional filtering
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @returns {Promise<void>}
- */
 export const listKandidat = async (req, res) => {
-  try {
-    const data = await fetchKandidatList({ calon: req.query.calon });
-    res.json(data);
-  } catch (error) {
-    const err = toHttpError(error);
-    res.status(err.status).json({ error: err.message });
-  }
+  const data = await fetchKandidatList({ calon: req.query.calon });
+  res.json(data);
 };
 
-/**
- * Create a new kandidat entry
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @returns {Promise<void>}
- */
 export const createKandidat = async (req, res) => {
-  try {
-    const validatedData = validateKandidatInput(req.body);
-    const data = await createKandidatEntry(validatedData);
-    res.status(201).json(data);
-  } catch (error) {
-    const err = toHttpError(error);
-    res.status(err.status).json({ error: err.message });
-  }
+  const validatedData = validateKandidatInput(req.body);
+  const data = await createKandidatEntry(validatedData);
+  res.status(201).json(data);
 };
 
-/**
- * Update an existing kandidat entry
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @returns {Promise<void>}
- */
 export const updateKandidat = async (req, res) => {
-  try {
-    const validatedData = validateKandidatInput(req.body);
-    const data = await updateKandidatEntry(req.params.id, validatedData);
-    res.json(data);
-  } catch (error) {
-    const err = toHttpError(error);
-    res.status(err.status).json({ error: err.message });
-  }
+  const validatedData = validateKandidatInput(req.body);
+  const data = await updateKandidatEntry(req.params.id, validatedData);
+  res.json(data);
 };
 
-/**
- * Delete a kandidat entry
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @returns {Promise<void>}
- */
 export const deleteKandidat = async (req, res) => {
-  try {
-    await removeKandidatEntry(req.params.id);
-    res.status(204).end();
-  } catch (error) {
-    const err = toHttpError(error);
-    res.status(err.status).json({ error: err.message });
-  }
+  await removeKandidatEntry(req.params.id);
+  res.status(204).end();
 };

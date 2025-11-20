@@ -1,5 +1,6 @@
 import express from "express";
 import { requireAuth, requireRole } from "../middleware/auth.js";
+import { asyncHandler } from "../middleware/errorHandler.js";
 import { voteLimiter } from "../middleware/rateLimiters.js";
 import { createVote, myVotes, results } from "../controllers/voteController.js";
 
@@ -29,7 +30,7 @@ const router = express.Router();
  *       403:
  *         description: Forbidden (not siswa)
  */
-router.post("/", requireAuth, requireRole("siswa"), voteLimiter, createVote);
+router.post("/", requireAuth, requireRole("siswa"), voteLimiter, asyncHandler(createVote));
 
 /**
  * @swagger
@@ -46,7 +47,7 @@ router.post("/", requireAuth, requireRole("siswa"), voteLimiter, createVote);
  *       401:
  *         description: Unauthorized
  */
-router.get("/me", requireAuth, requireRole("siswa"), myVotes);
+router.get("/me", requireAuth, requireRole("siswa"), asyncHandler(myVotes));
 
 /**
  * @swagger
@@ -61,6 +62,6 @@ router.get("/me", requireAuth, requireRole("siswa"), myVotes);
  *       500:
  *         description: Server error
  */
-router.get("/results", results);
+router.get("/results", asyncHandler(results));
 
 export default router;
