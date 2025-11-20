@@ -16,11 +16,15 @@ const swaggerOptions = {
     servers: [
       {
         url: "http://localhost:3000",
-        description: "Development Server"
+        description: "Development Server (Local)"
+      },
+      {
+        url: "http://localhost:5000",
+        description: "Development Server (Port 5000)"
       },
       {
         url: "https://sobat-stemanika.vercel.app",
-        description: "Production Server"
+        description: "Production Server (Vercel Deployment)"
       }
     ],
     components: {
